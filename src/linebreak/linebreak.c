@@ -20,7 +20,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 /* Modification by David Bruce <davidstuartbruce@gmail.com>
  * to allow compilation under mingw-cross-env and OS-X:
  */
-
+#define GNULIB_UNISTR_U8_MBTOUC_UNSAFE 1
 #ifndef ICONV_CONST
 #define ICONV_CONST const
 #endif

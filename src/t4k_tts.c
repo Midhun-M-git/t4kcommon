@@ -26,9 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
 
 #include "t4k_globals.h"
 #include "t4k_common.h"
-
-
+#include <stdlib.h>     //changed
 #include "SDL_thread.h"
+#include <wchar.h>
 
 SDL_Thread *tts_thread;
 int text_to_speech_status;
@@ -47,6 +47,7 @@ int tts_thread_func(void *arg)
 {
 	espeak_POSITION_TYPE position_type = POS_CHARACTER;
 	tts_argument recived = *((tts_argument*)(arg));
+	free(arg)
 	fprintf(stderr,"\nSpeaking : %s - %d",recived.text,recived.mode);
 	if (recived.mode == INTERRUPT)
 		T4K_Tts_cancel();
@@ -134,28 +135,44 @@ espeak_SetParameter(espeakPITCH,pitch,0);
  * 
  * if mode = APPEND then wait till speaking is finished 
  * then read the new text */
-void T4K_Tts_say(int rate,int pitch,int mode, const char* text, ...){
-	tts_argument data_to_pass;
-	
-	
-	if (text_to_speech_status){
-	
-	T4K_Tts_set_rate(rate);
-    T4K_Tts_set_pitch(pitch);
+void T4K_Tts_say(int rate,int pitch,int mode, const char* text, ...)    //change made
+{
+    tts_argument *data_to_pass;
 
-	//Getting the formated text
-	va_list list;
-	va_start(list,text);
-	vsprintf(data_to_pass.text,text,list);
-	va_end(list);
-	
-	//Passing mode
-	data_to_pass.mode = mode;
-	
-	//Calling threded function to say.	
-	tts_thread = SDL_CreateThread(tts_thread_func, &data_to_pass);
-	}
-}	
+    if (text_to_speech_status)
+    {
+        data_to_pass = malloc(sizeof(tts_argument));
+        if (!data_to_pass) return;
+        T4K_Tts_set_rate(rate);
+        T4K_Tts_set_pitch(pitch);
+
+        data_to_pass = malloc(sizeof(tts_argument));
+        if (!data_to_pass)
+            return;
+
+        char temp[10000];
+
+      char temp[10000];
+
+va_list list;
+va_start(list,text);
+vsnprintf(temp, sizeof(temp), text, list);
+va_end(list);
+
+mbstowcs(data_to_pass->text, temp,
+         sizeof(data_to_pass->text)/sizeof(wchar_t)-1);
+
+data_to_pass->text[
+    sizeof(data_to_pass->text)/sizeof(wchar_t)-1
+] = L'\0';
+
+        mbstowcs(data_to_pass->text, temp, 10000);
+
+        data_to_pass->mode = mode;
+
+        tts_thread = SDL_CreateThread(tts_thread_func, data_to_pass);
+    }
+}
 
 
 
@@ -165,6 +182,8 @@ void T4K_Tts_say(int rate,int pitch,int mode, const char* text, ...){
 
 #include <libspeechd.h>
 
+void T4K_Tts_cancel(void);
+void T4K_Tts_wait(void);
 
 SPDConnection *spd_connection;
 int text_to_speech_speaking;
@@ -174,21 +193,30 @@ int text_to_speech_speaking;
 int tts_thread_func(void *arg)
 {
 	tts_argument recived = *((tts_argument*)(arg));
-	fprintf(stderr,"\nSPD : %s - %d",recived.text,recived.mode);
+	fwprintf(stderr,L"\nSPD : %s - %d",recived.text,recived.mode);
 	
 	text_to_speech_speaking = 0;
 	
 	if (recived.mode == INTERRUPT)
 	{	
 		T4K_Tts_cancel();
-		spd_say(spd_connection, 1, recived.text);
+		char utf8[10000];
+
+wcstombs(utf8, recived.text, sizeof(utf8)-1);
+utf8[sizeof(utf8)-1] = '\0';
+
+spd_say(spd_connection, 1, utf8);
 	}
 	else
 	{
 
 		
-		spd_say(spd_connection, 1, recived.text);
-		
+		char utf8[10000];
+
+wcstombs(utf8, recived.text, sizeof(utf8)-1);
+utf8[sizeof(utf8)-1] = '\0';
+
+spd_say(spd_connection, 1, utf8);
 	}
 	
 		printf("\nWaiting");
@@ -295,7 +323,7 @@ void T4K_Tts_set_pitch(int pitch){
  * if mode = APPEND then wait till speaking is finished 
  * then read the new text */
 void T4K_Tts_say(int rate,int pitch,int mode, const char* text, ...){
-	tts_argument data_to_pass;
+	tts_argument *data_to_pass;
 	
 	
 	if (text_to_speech_status){
@@ -306,14 +334,19 @@ void T4K_Tts_say(int rate,int pitch,int mode, const char* text, ...){
 	//Getting the formated text
 	va_list list;
 	va_start(list,text);
-	vsprintf(data_to_pass.text,text,list);
+	vswprintf(
+    data_to_pass->text,
+    sizeof(data_to_pass->text) / sizeof(wchar_t),
+    (const wchar_t *)text,
+    list
+);
 	va_end(list);
 	
 	//Passing mode
-	data_to_pass.mode = mode;
+	data_to_pass->mode = mode;
 	
 	//Calling threded function to say.	
-	tts_thread = SDL_CreateThread(tts_thread_func, &data_to_pass);
+	tts_thread = SDL_CreateThread(tts_thread_func, data_to_pass); //changed 
 	}
 }	
 

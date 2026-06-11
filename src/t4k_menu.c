@@ -151,7 +151,7 @@ SDL_Surface**   render_buttons(MenuNode* menu, bool selected);
 char*           find_title_length(MenuNode* menu, int* length);
 char*           find_longest_text(MenuNode* menu, int* length);
 int             find_longest_menu_page(MenuNode* menu);
-void            set_font_size();
+void            set_font_size(bool uniform);
 void            prerender_menu(MenuNode* menu);
 int		min(int a, int b);
 int		max(int a, int b);
@@ -230,7 +230,8 @@ MenuNode *menu_TranslateNode(xmlNode *node) {
     }
 
     if(node->type == XML_ELEMENT_NODE) {
-	xmlAttr *current, *child;
+	xmlAttr *current;
+	xmlNode *child;
 	tnode = create_empty_node();
 
 	for(current = node->properties; current; current = current->next) {
@@ -421,6 +422,15 @@ void T4K_UnloadMenus(void)
 }
 
 
+static void prerender_wrapper(int resx,int resy)
+{
+
+  T4K_PrerenderAll();
+}
+
+
+
+
 /*
    RunMenu - main function to display the menu and run the event loop
    if return_choice = true then return chosen value instead of
@@ -455,7 +465,7 @@ int T4K_RunMenu(int index, bool return_choice, void (*draw_background)(), int (*
     int click_flag = 1;
     int using_scroll = 0;
 
-    internal_res_switch_handler(&T4K_PrerenderAll);
+    internal_res_switch_handler(prerender_wrapper);
 
     for(;;) /* one loop body execution for one menu page */
     {
@@ -890,7 +900,7 @@ int T4K_RunMenu(int index, bool return_choice, void (*draw_background)(), int (*
 
 			// Set and render new description text
 			{
-			    char *desc = _(menu->submenu[loc + menu->first_entry]->desc);
+			 const   char *desc = _(menu->submenu[loc + menu->first_entry]->desc);
 			    char out[256];
 			    int char_width;
 			    // Clear old rendered text:
@@ -1016,7 +1026,7 @@ int T4K_RunMenu(int index, bool return_choice, void (*draw_background)(), int (*
 			/* Set and render new description text when menu is scrolled - Nalin */
 			if(action == PAGEUP || action == PAGEDOWN)
 			{
-				char *desc = _(menu->submenu[loc + menu->first_entry]->desc);
+			const	char *desc = _(menu->submenu[loc + menu->first_entry]->desc);
 				char out[256];
 				int char_width;
 				// Clear old rendered text:

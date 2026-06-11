@@ -158,7 +158,9 @@ const char* find_file(const char* base_name)
     static char tmp_path[T4K_PATH_MAX];
     if (T4K_CheckFile(base_name))
 	return base_name;
-    snprintf(tmp_path, T4K_PATH_MAX, "%s/%s", app_prefix_path[0], base_name);
+   if (snprintf(tmp_path, sizeof(tmp_path), "%s/%s",
+             app_prefix_path[0], base_name) >= sizeof(tmp_path))
+    return "";
     if (T4K_CheckFile(tmp_path))
 	return tmp_path;
     snprintf(tmp_path, T4K_PATH_MAX, "%s/%s", COMMON_DATA_PREFIX, base_name);
@@ -744,7 +746,9 @@ sprite* load_sprite(const char* name, int mode, int w, int h, bool proportional)
 	}
 
 	//see if a cached PNG exists
-	sprintf(pngfn, "%s/" IMAGE_DIR "/%sd-%d-%d.png", cachepath, name, width, height);
+	snprintf(pngfn, sizeof(pngfn),
+         "%s/" IMAGE_DIR "/%sd-%d-%d.png",
+         cachepath, name, width, height);
 	if(T4K_CheckFile(pngfn)==1)
 	{
 	    new_sprite=(sprite*)malloc(sizeof(sprite));
@@ -752,7 +756,9 @@ sprite* load_sprite(const char* name, int mode, int w, int h, bool proportional)
 	    i=0;
 	    while(1)
 	    {
-		sprintf(pngfn, "%s/" IMAGE_DIR "/%s%d-%d-%d.png", cachepath, name, i, width, height);
+		snprintf(pngfn, sizeof(pngfn),
+         "%s/" IMAGE_DIR "/%s%d-%d-%d.png",
+         cachepath, name, i, width, height);
 		if(T4K_CheckFile(pngfn)==1)
 		{
 		    new_sprite->frame[i]=IMG_Load(pngfn);
@@ -781,7 +787,9 @@ sprite* load_sprite(const char* name, int mode, int w, int h, bool proportional)
 	    if (shouldcache)
 	    {
 		/* cache loaded sprites in PNG files */
-		sprintf(pngfn, "%s/" IMAGE_DIR "/%sd-%d-%d.png", cachepath, name, width, height);
+	snprintf(pngfn, sizeof(pngfn),
+         "%s/" IMAGE_DIR "/%sd-%d-%d.png",
+         cachepath, name, width, height);
 		if(T4K_CheckFile(pngfn)!=1)
 		    savePNG(new_sprite->default_img,pngfn);
 		for(i=0; i<new_sprite->num_frames; i++)
