@@ -63,6 +63,7 @@ target_link_libraries(${LIB_NAME}
     ${LIBXML2_LIBRARIES}
     ${LINEBREAK_BINARY_DIR}/liblinebreak.a
     speechd 
+    ${RSVG_LIBRARIES}
     )
 
 t4k_include_definition(HAVE_LIBSDL_PANGO)
