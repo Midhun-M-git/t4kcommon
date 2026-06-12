@@ -195,3 +195,4 @@ void T4K_LineWrapList(const char input[MAX_LINES][MAX_LINEWIDTH],
     }
     DEBUGMSG(debug_linewrap,"All done.\n");
 }
+char wrapped_lines[MAX_LINES][MAX_LINEWIDTH];
