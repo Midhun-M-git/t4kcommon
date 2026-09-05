@@ -4,7 +4,7 @@
 
 # TODO - add cmake build support for t4k_test program - DSB
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.5)
 
 include(ConfigureChecks)
 configure_file(${CMAKE_SOURCE_DIR}/config.h.cmake ${CMAKE_BINARY_DIR}/config.h)
