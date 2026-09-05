@@ -130,6 +130,13 @@ int T4K_HandleStdEvents (const SDL_Event* event)
 {
     int ret = 0;
 
+    if (event->type == SDL_EVENT_WINDOW_RESIZED || event->type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED)
+    {
+        /* Recreate screen surface with new dimensions */
+        T4K_UpdateScreenSize();
+        return 1;
+    }
+
     if (event->type != SDL_EVENT_KEY_DOWN)
 	return 0;
 

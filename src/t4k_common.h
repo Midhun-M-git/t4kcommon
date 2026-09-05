@@ -988,6 +988,7 @@ void T4K_ChangeWindowSize( int new_res_x,
 //!     None
 //!
 void T4K_SwitchScreenMode( void );
+void T4K_UpdateScreenSize( void );
 
 //==============================================================================
 //

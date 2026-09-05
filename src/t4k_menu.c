@@ -818,14 +818,12 @@ int T4K_RunMenu(int index, bool return_choice, void (*draw_background)(), int (*
 		    stop = true;
 
 		/* handle button focus */
-		if (old_loc != loc || first_loop || event.key.key == SDLK_F10) {
+		if (old_loc != loc || first_loop || event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F10 || event.type == SDL_EVENT_WINDOW_RESIZED || event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
 		    DEBUGMSG(debug_menu, "run_menu(): changed button focus, old=%d, new=%d\n", old_loc, loc);
 
 		    first_loop = 0;
 
-		    int key = event.key.key;
-
-		    if (key == SDLK_F10) {
+		    if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F10 || event.type == SDL_EVENT_WINDOW_RESIZED || event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
 			T4K_PrerenderAll();	 // Important when the screen is being RESIZED
 			prerender_panel();   // To adjust the description panel size with new resolution
 			if (loc == -1 && old_loc == -1)
@@ -891,7 +889,12 @@ int T4K_RunMenu(int index, bool return_choice, void (*draw_background)(), int (*
 			if(desc_prerendered) {
 			    SDL_Rect pos = {T4K_GetScreen()->w * desc_panel_pos[0], T4K_GetScreen()->h * desc_panel_pos[1]};
 			    SDL_BlitSurface(desc_panel, NULL, T4K_GetScreen(), &pos);
+			    
+			    SDL_Rect clip = {pos.x, pos.y, desc_panel->w, desc_panel->h};
+			    SDL_SetSurfaceClipRect(T4K_GetScreen(), &clip);
 			    SDL_BlitSurface(desc_prerendered, NULL, T4K_GetScreen(), &pos);
+			    SDL_SetSurfaceClipRect(T4K_GetScreen(), NULL);
+			    
 			    T4K_PresentScreen();
 			}
 

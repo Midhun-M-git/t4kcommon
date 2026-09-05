@@ -106,8 +106,12 @@ void T4K_PresentScreen(void)
     SDL_Texture* tex = SDL_CreateTextureFromSurface(r, s);
     if (tex)
     {
+        int render_w, render_h;
+        SDL_GetRenderOutputSize(r, &render_w, &render_h);
+        SDL_FRect dstrect = {0.0f, 0.0f, (float)render_w, (float)render_h};
+
         SDL_RenderClear(r);
-        SDL_RenderTexture(r, tex, NULL, NULL);
+        SDL_RenderTexture(r, tex, NULL, &dstrect);
         SDL_RenderPresent(r);
         SDL_DestroyTexture(tex);
     }
@@ -533,15 +537,9 @@ void T4K_ChangeWindowSize(int new_res_x, int new_res_y)
 	DEBUGMSG(debug_sdl, "T4K_ChangeWindowSize() can be run only in windowed mode !");
 }
 
-/* switch between fullscreen and windowed mode */
-void T4K_SwitchScreenMode(void)
+/* update the screen surface to match current window size (e.g. after a resize) */
+void T4K_UpdateScreenSize(void)
 {
-    Uint32 wflags = SDL_GetWindowFlags(sdl_window);
-    bool currently_fullscreen = (wflags & SDL_WINDOW_FULLSCREEN) != 0;
-
-    SDL_SetWindowFullscreen(sdl_window,
-        currently_fullscreen ? 0 : SDL_WINDOW_FULLSCREEN);
-
     /* Get the new window size and recreate the screen surface */
     int new_w, new_h;
     SDL_GetWindowSize(sdl_window, &new_w, &new_h);
@@ -553,15 +551,13 @@ void T4K_SwitchScreenMode(void)
     if (screen == NULL)
     {
 	fprintf(stderr,
-		"\nError: I could not switch to %s mode.\n"
+		"\nError: I could not recreate the screen surface.\n"
 		"The Simple DirectMedia error that occured was:\n"
 		"%s\n\n",
-		currently_fullscreen ? "windowed" : "fullscreen",
 		SDL_GetError());
     }
     else
     {
-	DEBUGMSG(debug_sdl, "Switched screen mode to %s\n", currently_fullscreen ? "windowed" : "fullscreen");
 	if (res_switch_callback)
 	    res_switch_callback(screen->w, screen->h);
 	if (internal_res_switch_callback)
@@ -569,6 +565,20 @@ void T4K_SwitchScreenMode(void)
 
 	T4K_PresentScreen();
     }
+}
+
+/* switch between fullscreen and windowed mode */
+void T4K_SwitchScreenMode(void)
+{
+    Uint32 wflags = SDL_GetWindowFlags(sdl_window);
+    bool currently_fullscreen = (wflags & SDL_WINDOW_FULLSCREEN) != 0;
+
+    SDL_SetWindowFullscreen(sdl_window,
+        currently_fullscreen ? 0 : SDL_WINDOW_FULLSCREEN);
+
+    DEBUGMSG(debug_sdl, "Switched screen mode to %s\n", currently_fullscreen ? "windowed" : "fullscreen");
+    
+    T4K_UpdateScreenSize();
 }
 
 void internal_res_switch_handler(ResSwitchCallback callback)
@@ -1309,8 +1319,6 @@ static SDL_Surface* render_multiline_text(TTF_Font* font, const char* text, SDL_
     SDL_Surface* line_surfs[32];
     int total_h = 0;
     int max_w = 0;
-    int line_skip = TTF_GetFontLineSkip(font);
-    if (line_skip <= 0) line_skip = TTF_GetFontSize(font) + 4;
 
     for (int i = 0; i < line_count; i++)
     {
@@ -1318,7 +1326,9 @@ static SDL_Surface* render_multiline_text(TTF_Font* font, const char* text, SDL_
         if (line_surfs[i])
         {
             if (line_surfs[i]->w > max_w) max_w = line_surfs[i]->w;
-            total_h += (i == 0) ? line_surfs[i]->h : line_skip;
+            total_h += line_surfs[i]->h;
+            // Add a small 2 pixel padding between lines, except for the last line
+            if (i < line_count - 1) total_h += 2;
         }
     }
 
@@ -1330,6 +1340,7 @@ static SDL_Surface* render_multiline_text(TTF_Font* font, const char* text, SDL_
 
     SDL_Surface* result = SDL_CreateSurface(max_w, total_h, SDL_PIXELFORMAT_RGBA32);
     SDL_FillSurfaceRect(result, NULL, SDL_MapRGBA(result->format, 0, 0, 0, 0));
+    SDL_SetSurfaceBlendMode(result, SDL_BLENDMODE_BLEND);
 
     int current_y = 0;
     for (int i = 0; i < line_count; i++)
@@ -1338,7 +1349,7 @@ static SDL_Surface* render_multiline_text(TTF_Font* font, const char* text, SDL_
         {
             SDL_Rect dst = {0, current_y, line_surfs[i]->w, line_surfs[i]->h};
             SDL_BlitSurface(line_surfs[i], NULL, result, &dst);
-            current_y += line_skip;
+            current_y += line_surfs[i]->h + 2;
             SDL_FreeSurface(line_surfs[i]);
         }
     }
@@ -1522,7 +1533,7 @@ int T4K_CharsForWidth(int fontsize, int pixel_width)
     SDL_Surface* s;
     for(i = 0; i < 255 && !done; i++)
     {
-	buf[i] = 'x';
+	buf[i] = 'W';
 	buf[i + 1] = '\0';
 	s = T4K_SimpleText(buf, fontsize, &white);
 	if(s && s->w > pixel_width)  //means string of (i++) 'x' exceeds width
