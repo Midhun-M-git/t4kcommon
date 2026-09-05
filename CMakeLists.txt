@@ -2,7 +2,7 @@
 #other CMakeLists.txt and is not safe for human consumption. 
 #Please hack responsibly.
 
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 3.5)
 
 set(PACKAGE_NAME "Tux4Kids_common")
 set(PACKAGE_VERSION 1.0.0)
