@@ -97,6 +97,8 @@ target_link_libraries(${LIB_NAME}
     PkgConfig::SDL3_TTF
     PkgConfig::SDL3_MIXER
     ${LIBXML2_LIBRARIES}
+    ${RSVG_LIBRARIES}
+    ${CAIRO_LIBRARIES}
     ${LINEBREAK_BINARY_DIR}/liblinebreak.a
     )
 
