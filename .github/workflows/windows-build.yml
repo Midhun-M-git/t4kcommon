@@ -1,0 +1,59 @@
+name: Windows MSYS2 Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - name: Set up MSYS2
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: UCRT64
+        update: true
+        install: >-
+          mingw-w64-ucrt-x86_64-gcc
+          mingw-w64-ucrt-x86_64-cmake
+          mingw-w64-ucrt-x86_64-pkgconf
+          mingw-w64-ucrt-x86_64-sdl3
+          mingw-w64-ucrt-x86_64-sdl3-image
+          mingw-w64-ucrt-x86_64-sdl3-mixer
+          mingw-w64-ucrt-x86_64-sdl3-ttf
+          mingw-w64-ucrt-x86_64-librsvg
+          mingw-w64-ucrt-x86_64-libxml2
+          mingw-w64-ucrt-x86_64-gettext
+          make
+
+    - name: Checkout t4kcommon
+      uses: actions/checkout@v4
+      with:
+        path: t4kcommon
+
+    - name: Build t4kcommon
+      run: |
+        cd t4kcommon
+        mkdir build && cd build
+        cmake .. -DCMAKE_INSTALL_PREFIX=/ucrt64 -G "MSYS Makefiles"
+        make -j$(nproc)
+        make install
+
+    - name: Package Artifacts
+      run: |
+        mkdir t4kcommon-Windows
+        # Copy compiled DLL and headers
+        cp t4kcommon/build/src/libt4k_common.dll t4kcommon-Windows/
+        cp -r t4kcommon/src/*.h t4kcommon-Windows/
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: t4kcommon-Windows
+        path: t4kcommon-Windows/
