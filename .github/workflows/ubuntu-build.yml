@@ -18,7 +18,7 @@ jobs:
           libxml2-dev librsvg2-dev libpng-dev libespeak-ng-dev \
           libjpeg-dev libwebp-dev libtiff-dev libfreetype6-dev libharfbuzz-dev \
           libvorbis-dev libflac-dev libmpg123-dev libopusfile-dev \
-          libwayland-dev libx11-dev libxext-dev libxcursor-dev \
+          libwayland-dev libx11-dev libxext-dev libxcursor-dev libxtst-dev \
           libxi-dev libxinerama-dev libxrandr-dev libxss-dev libxxf86vm-dev \
           libasound2-dev libpulse-dev libdbus-1-dev libudev-dev libgl1-mesa-dev \
           libgles2-mesa-dev libegl1-mesa-dev libxkbcommon-dev gettext
