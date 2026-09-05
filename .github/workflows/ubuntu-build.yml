@@ -25,22 +25,22 @@ jobs:
 
     - name: Build SDL3 from source
       run: |
-        git clone --depth 1 -b prerelease-3.1.3 https://github.com/libsdl-org/SDL.git
+        git clone --depth 1 https://github.com/libsdl-org/SDL.git
         cd SDL && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local && make -j$(nproc) && sudo make install
         
     - name: Build SDL3_image from source
       run: |
-        git clone --depth 1 -b prerelease-3.1.2 https://github.com/libsdl-org/SDL_image.git
+        git clone --depth 1 https://github.com/libsdl-org/SDL_image.git
         cd SDL_image && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local && make -j$(nproc) && sudo make install
         
     - name: Build SDL3_ttf from source
       run: |
-        git clone --depth 1 -b prerelease-3.1.2 https://github.com/libsdl-org/SDL_ttf.git
+        git clone --depth 1 https://github.com/libsdl-org/SDL_ttf.git
         cd SDL_ttf && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local && make -j$(nproc) && sudo make install
         
     - name: Build SDL3_mixer from source
       run: |
-        git clone --depth 1 -b prerelease-3.1.2 https://github.com/libsdl-org/SDL_mixer.git
+        git clone --depth 1 https://github.com/libsdl-org/SDL_mixer.git
         cd SDL_mixer && mkdir build && cd build && cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local && make -j$(nproc) && sudo make install
         
         sudo ldconfig
