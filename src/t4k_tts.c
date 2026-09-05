@@ -368,5 +368,6 @@ void T4K_Tts_set_pitch(int pitch) { (void)pitch; }
 void T4K_Tts_say(int rate, int pitch, int mode, const char* text, ...) { (void)rate; (void)pitch; (void)mode; (void)text; }
 void T4K_Tts_cancel(void) {}
 void T4K_Tts_wait(void) {}
+void T4K_Tts_set_status(int status) { (void)status; }
 
 #endif
