@@ -1,0 +1,33 @@
+name: Ubuntu Linux Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake pkg-config \
+          libxml2-dev librsvg2-dev libpng-dev libespeak-ng-dev \
+          libsdl3-dev libsdl3-image-dev libsdl3-ttf-dev libsdl3-mixer-dev
+
+    - name: Checkout t4kcommon
+      uses: actions/checkout@v4
+      with:
+        path: t4kcommon
+
+    - name: Build and Install t4kcommon
+      run: |
+        cd t4kcommon
+        mkdir build && cd build
+        cmake .. -DCMAKE_INSTALL_PREFIX=/usr/local
+        make -j$(nproc)
+        sudo make install
+        sudo ldconfig
