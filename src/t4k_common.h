@@ -670,6 +670,12 @@ int T4K_GetResolutions( int* win_x,
                         int* full_y
                       );
 
+void T4K_SetResolutions( int win_x,
+                         int win_y,
+                         int full_x,
+                         int full_y
+                       );
+
 //==============================================================================
 // 
 //  T4K_DrawButton

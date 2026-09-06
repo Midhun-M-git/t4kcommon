@@ -1,0 +1,50 @@
+name: macOS Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - name: Install Dependencies
+      run: |
+        brew update
+        brew install cmake pkg-config gettext libpng libxml2 librsvg espeak-ng \
+          sdl3 sdl3_image sdl3_ttf sdl3_mixer
+
+    - name: Checkout t4kcommon
+      uses: actions/checkout@v4
+      with:
+        path: t4kcommon
+
+    - name: Build and Install t4kcommon
+      run: |
+        HOMEBREW_PREFIX="$(brew --prefix)"
+        GETTEXT_PREFIX="$(brew --prefix gettext)"
+        cd t4kcommon
+        mkdir build && cd build
+        cmake .. \
+          -DCMAKE_INSTALL_PREFIX=/usr/local \
+          -DCMAKE_PREFIX_PATH="${HOMEBREW_PREFIX};${GETTEXT_PREFIX}" \
+          -DCMAKE_C_FLAGS="-I${HOMEBREW_PREFIX}/include -I${GETTEXT_PREFIX}/include" \
+          -DCMAKE_SHARED_LINKER_FLAGS="-L${HOMEBREW_PREFIX}/lib -L${GETTEXT_PREFIX}/lib -lintl -liconv -lpng" \
+          -DCMAKE_EXE_LINKER_FLAGS="-L${HOMEBREW_PREFIX}/lib -L${GETTEXT_PREFIX}/lib -lintl -liconv -lpng"
+        make -j$(sysctl -n hw.ncpu)
+        sudo make install
+
+    - name: Package Artifacts
+      run: |
+        mkdir t4kcommon-macOS
+        cp t4kcommon/build/src/libt4k_common.dylib t4kcommon-macOS/
+        cp t4kcommon/src/*.h t4kcommon-macOS/
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: t4kcommon-macOS
+        path: t4kcommon-macOS/

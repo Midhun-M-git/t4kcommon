@@ -86,12 +86,28 @@ void T4K_Tts_wait()
 	}
 }
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 //This function should be called at begining 
 int T4K_Tts_init()
 {
     const char* path = NULL;
 #if defined(WIN32) || defined(_WIN32) || defined(BUILD_MINGW32)
     path = ".";
+#else
+    static char bundle_espeak_dir[1024];
+    const char* base = SDL_GetBasePath();
+    if (base) {
+        snprintf(bundle_espeak_dir, sizeof(bundle_espeak_dir), "%sespeak-ng-data", base);
+        if (access(bundle_espeak_dir, F_OK) == 0) {
+            path = base;
+        }
+    }
+    if (!path && access("espeak-ng-data", F_OK) == 0) {
+        path = ".";
+    }
 #endif
 	if(espeak_Initialize(AUDIO_OUTPUT_PLAYBACK, 500, path, 0 ) == -1)
 	{

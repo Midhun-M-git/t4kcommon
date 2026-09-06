@@ -87,6 +87,23 @@ void T4K_SetWindowAndRenderer(SDL_Window* win, SDL_Renderer* ren)
 {
     sdl_window = win;
     sdl_renderer = ren;
+    if (fs_res_x == 0 || fs_res_y == 0)
+    {
+        const SDL_DisplayMode* mode = SDL_GetDesktopDisplayMode(SDL_GetPrimaryDisplay());
+        if (mode)
+        {
+            fs_res_x = mode->w;
+            fs_res_y = mode->h;
+        }
+    }
+}
+
+void T4K_SetResolutions(int win_x, int win_y, int full_x, int full_y)
+{
+    win_res_x = win_x;
+    win_res_y = win_y;
+    fs_res_x = full_x;
+    fs_res_y = full_y;
 }
 
 void T4K_SetScreen(SDL_Surface* s)
@@ -760,11 +777,12 @@ int T4K_TransWipe(const SDL_Surface* newbkg, WipeStyle type, int segments, int d
 	return 0;
     }
 
-    /* FIXME should support scaling here - DSB */
+    /* If background size does not match screen, blit scaled to fill screen */
     if(newbkg->w != screen->w || newbkg->h != screen->h)
     {
-	fprintf(stderr, "T4K_TransWipe() - wrong size newbkg* arg");
-	return 0;
+        SDL_BlitSurfaceScaled((SDL_Surface*)newbkg, NULL, screen, NULL, SDL_SCALEMODE_LINEAR);
+        T4K_PresentScreen();
+        return 1;
     }
 
     /* segments is num of divisions */
