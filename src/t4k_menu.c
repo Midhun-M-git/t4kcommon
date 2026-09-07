@@ -872,14 +872,13 @@ int T4K_RunMenu(int index, bool return_choice, void (*draw_background)(), int (*
 
 			// Set and render new description text
 			{
-			    char *desc = _(menu->submenu[loc + menu->first_entry]->desc);
+			    char *raw_desc = menu->submenu[loc + menu->first_entry]->desc;
+			    char *desc = (raw_desc && raw_desc[0] != '\0') ? _(raw_desc) : "";
 			    char out[256];
 			    int char_width;
 			    // Clear old rendered text:
 			    SDL_FreeSurface(desc_prerendered);
 			    desc_prerendered = NULL;
-			    if(desc == NULL)
-				desc = "";
 			    char_width = desc_chars_per_line(T4K_TOOLTIP_FONTSIZE);
 			    T4K_LineWrapInsBreaks(desc, out, char_width, 64, 64);
 			    if (strcmp(desc, "") != 0)
@@ -1004,14 +1003,13 @@ int T4K_RunMenu(int index, bool return_choice, void (*draw_background)(), int (*
 			/* Set and render new description text when menu is scrolled - Nalin */
 			if(action == PAGEUP || action == PAGEDOWN)
 			{
-				char *desc = _(menu->submenu[loc + menu->first_entry]->desc);
+				char *raw_desc = menu->submenu[loc + menu->first_entry]->desc;
+				char *desc = (raw_desc && raw_desc[0] != '\0') ? _(raw_desc) : "";
 				char out[256];
 				int char_width;
 				// Clear old rendered text:
 				SDL_FreeSurface(desc_prerendered);
 				desc_prerendered = NULL;
-				if(desc == NULL)
-				desc = "";
 				char_width = desc_chars_per_line(T4K_TOOLTIP_FONTSIZE);
 				T4K_LineWrapInsBreaks(desc, out, char_width, 64, 64);
 				//        desc_prerendered = T4K_SimpleText(out, T4K_TOOLTIP_FONTSIZE, &yellow);
