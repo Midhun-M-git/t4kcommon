@@ -13,7 +13,10 @@ include(T4K_Sugar)
 #Cmake module contains the source files for this library
 include(${CMAKE_SOURCE_DIR}/cmake-modules/Files.cmake)
 
-find_package(LibXml2 REQUIRED)
+# Use pkg-config for libxml2 so we always get the SHARED library flags (-lxml2).
+# find_package(LibXml2) picks up libxml2.a (static, no -fPIC) on Debian/Ubuntu,
+# which causes a linker error when building libt4k_common.so.
+pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
 
 #Look here for headers
 include_directories(
@@ -22,7 +25,7 @@ include_directories(
     ${SDL3_TTF_INCLUDE_DIRS}
     ${SDL3_MIXER_INCLUDE_DIRS}
     ${SDL3_NET_INCLUDE_DIRS}
-    ${LIBXML2_INCLUDE_DIR}
+    ${LIBXML2_INCLUDE_DIRS}
     ${CMAKE_SOURCE_DIR}/gettext
     ${CMAKE_BINARY_DIR}
     ${CMAKE_BINARY_DIR}/src
