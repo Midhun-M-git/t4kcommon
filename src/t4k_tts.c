@@ -62,7 +62,10 @@ int SDLCALL tts_thread_func(void *arg)
 		T4K_Tts_wait();
 	
 	int Size = strlen(recived->text)+1;
-	espeak_ERROR err = espeak_Synth(recived->text, Size, 0, position_type, 0, espeakCHARS_AUTO, 0, NULL);	
+	/* espeakPHONEMES (0x100): text inside [[ ]] is treated as Kirshenbaum phoneme codes.
+	 * This is safe — only activates within [[ ]] delimiters; all other text is unaffected.
+	 * Required so that [[eI]] can force correct letter-name pronunciation for 'a'/'A'. */
+	espeak_ERROR err = espeak_Synth(recived->text, Size, 0, position_type, 0, espeakCHARS_AUTO | espeakPHONEMES, 0, NULL);	
 	fprintf(stderr, "espeak_Synth returned %d for '%s'\n", (int)err, recived->text);
 	fflush(stderr);
 	espeak_Synchronize();
