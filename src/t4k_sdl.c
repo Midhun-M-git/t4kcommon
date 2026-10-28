@@ -168,12 +168,9 @@ void T4K_PresentScreen(void)
     if (present_tex)
     {
         SDL_UpdateTexture(present_tex, NULL, s->pixels, s->pitch);
-        int render_w, render_h;
-        SDL_GetRenderOutputSize(r, &render_w, &render_h);
-        SDL_FRect dstrect = {0.0f, 0.0f, (float)render_w, (float)render_h};
 
         SDL_RenderClear(r);
-        SDL_RenderTexture(r, present_tex, NULL, &dstrect);
+        SDL_RenderTexture(r, present_tex, NULL, NULL);
         SDL_RenderPresent(r);
     }
     else
@@ -183,12 +180,9 @@ void T4K_PresentScreen(void)
         if (tex)
         {
             SDL_SetTextureScaleMode(tex, SDL_SCALEMODE_LINEAR);
-            int render_w, render_h;
-            SDL_GetRenderOutputSize(r, &render_w, &render_h);
-            SDL_FRect dstrect = {0.0f, 0.0f, (float)render_w, (float)render_h};
 
             SDL_RenderClear(r);
-            SDL_RenderTexture(r, tex, NULL, &dstrect);
+            SDL_RenderTexture(r, tex, NULL, NULL);
             SDL_RenderPresent(r);
             SDL_DestroyTexture(tex);
         }

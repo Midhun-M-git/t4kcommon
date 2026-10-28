@@ -161,6 +161,17 @@ const char* find_file(const char* base_name)
     snprintf(tmp_path, T4K_PATH_MAX, "%s/%s", app_prefix_path[0], base_name);
     if (T4K_CheckFile(tmp_path))
 	return tmp_path;
+    /* Also check local "data" directory (e.g. portable / build directory on Linux) */
+    snprintf(tmp_path, T4K_PATH_MAX, "data/%s", base_name);
+    if (T4K_CheckFile(tmp_path))
+	return tmp_path;
+    const char* base = SDL_GetBasePath();
+    if (base)
+    {
+        snprintf(tmp_path, T4K_PATH_MAX, "%sdata/%s", base, base_name);
+        if (T4K_CheckFile(tmp_path))
+            return tmp_path;
+    }
     snprintf(tmp_path, T4K_PATH_MAX, "%s/%s", COMMON_DATA_PREFIX, base_name);
     if (T4K_CheckFile(tmp_path))
 	return tmp_path;
