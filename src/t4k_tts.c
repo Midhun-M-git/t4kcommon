@@ -140,6 +140,7 @@ static int SDLCALL tts_worker_func(void *arg)
 		/* espeakPHONEMES (0x100): text inside [[ ]] is treated as Kirshenbaum phoneme codes */
 		espeak_Synth(node->text, size, 0, position_type, 0,
 		             espeakCHARS_AUTO | espeakPHONEMES, 0, NULL);
+		espeak_Synchronize();
 
 		free(node);
 
@@ -182,6 +183,7 @@ void T4K_Tts_wait(void)
 			break;
 		SDL_Delay(20);
 	}
+	SDL_Delay(40);
 }
 
 #ifdef _WIN32
@@ -335,6 +337,7 @@ int T4K_Tts_set_voice(char voice_name[]){
 void T4K_Tts_stop(void)
 {
 	tts_cancel_requested = 1;
+	espeak_Cancel();
 	if (tts_audio_stream)
 		SDL_ClearAudioStream(tts_audio_stream);
 
@@ -412,6 +415,7 @@ void T4K_Tts_say(int rate, int pitch, int mode, const char* text, ...){
 	if (mode == INTERRUPT)
 	{
 		tts_cancel_requested = 1;
+		espeak_Cancel();
 		if (tts_audio_stream)
 			SDL_ClearAudioStream(tts_audio_stream);
 
