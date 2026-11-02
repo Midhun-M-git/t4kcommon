@@ -847,12 +847,12 @@ int T4K_RunMenu(int index, bool return_choice, void (*draw_background)(), int (*
 		    stop = true;
 
 		/* handle button focus */
-		if (old_loc != loc || first_loop || event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F10 || event.type == SDL_EVENT_WINDOW_RESIZED || event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+		if (old_loc != loc || first_loop || event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F10 || event.type == SDL_EVENT_WINDOW_RESIZED || event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED || event.type == SDL_EVENT_WINDOW_RESTORED) {
 		    DEBUGMSG(debug_menu, "run_menu(): changed button focus, old=%d, new=%d\n", old_loc, loc);
 
 		    first_loop = 0;
 
-		    if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F10 || event.type == SDL_EVENT_WINDOW_RESIZED || event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED) {
+		    if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F10 || event.type == SDL_EVENT_WINDOW_RESIZED || event.type == SDL_EVENT_WINDOW_PIXEL_SIZE_CHANGED || event.type == SDL_EVENT_WINDOW_RESTORED) {
 			T4K_PrerenderAll();	 // Important when the screen is being RESIZED
 			prerender_panel();   // To adjust the description panel size with new resolution
 			if (loc == -1 && old_loc == -1)

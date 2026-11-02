@@ -145,6 +145,8 @@ void T4K_SetScreen(SDL_Surface* s)
    on high-DPI/emulated ARM64 devices such as Microsoft Surface Laptop). */
 void T4K_PresentScreen(void)
 {
+    if (sdl_window && (SDL_GetWindowFlags(sdl_window) & SDL_WINDOW_MINIMIZED))
+        return;
     SDL_Renderer* r = sdl_renderer ? sdl_renderer : T4K_GetRenderer();
     SDL_Surface* s = screen ? screen : T4K_GetScreen();
     if (!r || !s)
@@ -612,10 +614,25 @@ void T4K_ChangeWindowSize(int new_res_x, int new_res_y)
 /* update the screen surface to match current window size (e.g. after a resize) */
 void T4K_UpdateScreenSize(void)
 {
-    /* Get the new window size and recreate the screen surface */
-    int new_w, new_h;
+    if (!sdl_window)
+        return;
+
+    Uint32 wflags = SDL_GetWindowFlags(sdl_window);
+    /* Don't destroy/recreate surface while window is minimized or hidden */
+    if ((wflags & SDL_WINDOW_MINIMIZED) || (wflags & SDL_WINDOW_HIDDEN))
+        return;
+
+    int new_w = 0, new_h = 0;
     SDL_GetWindowSize(sdl_window, &new_w, &new_h);
 
+    if (new_w <= 0 || new_h <= 0)
+        return;
+
+    /* If screen already exists and dimensions match, nothing to recreate */
+    if (screen && screen->w == new_w && screen->h == new_h)
+        return;
+
+    /* Get the new window size and recreate the screen surface */
     if (screen)
 	SDL_DestroySurface(screen);
     screen = SDL_CreateSurface(new_w, new_h, SDL_PIXELFORMAT_RGBA32);
@@ -630,6 +647,12 @@ void T4K_UpdateScreenSize(void)
     }
     else
     {
+        if (!(wflags & SDL_WINDOW_FULLSCREEN) && !(wflags & SDL_WINDOW_MAXIMIZED))
+        {
+            win_res_x = new_w;
+            win_res_y = new_h;
+        }
+
 	if (res_switch_callback)
 	    res_switch_callback(screen->w, screen->h);
 	if (internal_res_switch_callback)
@@ -642,16 +665,46 @@ void T4K_UpdateScreenSize(void)
 /* switch between fullscreen and windowed mode */
 void T4K_SwitchScreenMode(void)
 {
+    if (!sdl_window)
+        return;
+
     Uint32 wflags = SDL_GetWindowFlags(sdl_window);
     bool currently_fullscreen = (wflags & SDL_WINDOW_FULLSCREEN) != 0;
 
-    SDL_SetWindowFullscreen(sdl_window,
-        currently_fullscreen ? 0 : SDL_WINDOW_FULLSCREEN);
+    if (currently_fullscreen)
+    {
+        /* Exit fullscreen back to windowed mode */
+        SDL_SetWindowFullscreen(sdl_window, false);
+        SDL_SyncWindow(sdl_window);
+
+        int target_w = (win_res_x > 0) ? win_res_x : 640;
+        int target_h = (win_res_y > 0) ? win_res_y : 480;
+        SDL_SetWindowSize(sdl_window, target_w, target_h);
+        SDL_SetWindowPosition(sdl_window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
+        SDL_SyncWindow(sdl_window);
+    }
+    else
+    {
+        /* Save current windowed dimensions before entering fullscreen (unless maximized) */
+        if (!(wflags & SDL_WINDOW_MAXIMIZED))
+        {
+            int cur_w = 0, cur_h = 0;
+            SDL_GetWindowSize(sdl_window, &cur_w, &cur_h);
+            if (cur_w > 0 && cur_h > 0)
+            {
+                win_res_x = cur_w;
+                win_res_y = cur_h;
+            }
+        }
+        SDL_SetWindowFullscreen(sdl_window, true);
+        SDL_SyncWindow(sdl_window);
+    }
 
     DEBUGMSG(debug_sdl, "Switched screen mode to %s\n", currently_fullscreen ? "windowed" : "fullscreen");
     
     T4K_UpdateScreenSize();
 }
+
 
 void internal_res_switch_handler(ResSwitchCallback callback)
 {
