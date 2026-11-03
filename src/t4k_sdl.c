@@ -726,13 +726,21 @@ SDL_EventType T4K_WaitForEvent(Uint32 events)
     SDL_Event evt;
     while (1)
     {
-	while (SDL_PollEvent(&evt) )
+	while (SDL_PollEvent(&evt))
 	{
+	    if (evt.type == SDL_EVENT_QUIT || evt.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED)
+		return evt.type;
 	    if (events == 0 || (evt.type == (SDL_EventType)events))
 		return evt.type;
-	    else
-		SDL_Delay(50);
+	    /* Support bitwise combination of event types in SDL3 */
+	    if ((events & evt.type) == evt.type)
+		return evt.type;
+	    if ((events & SDL_EVENT_KEY_DOWN) && (evt.type == SDL_EVENT_KEY_DOWN))
+		return evt.type;
+	    if ((events & SDL_EVENT_MOUSE_BUTTON_DOWN) && (evt.type == SDL_EVENT_MOUSE_BUTTON_DOWN))
+		return evt.type;
 	}
+	SDL_Delay(20);
     }
 }
 /* Swiped shamelessly from TuxPaint
