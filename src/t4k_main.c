@@ -143,7 +143,7 @@ int T4K_HandleStdEvents (const SDL_Event* event)
         return 1;
     }
 
-    if (event->type != SDL_EVENT_KEY_DOWN)
+    if (event->type != SDL_EVENT_KEY_DOWN || event->key.repeat)
 	return 0;
 
     SDL_Keycode key = event->key.key;

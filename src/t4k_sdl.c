@@ -657,14 +657,18 @@ void T4K_UpdateScreenSize(void)
 	    res_switch_callback(screen->w, screen->h);
 	if (internal_res_switch_callback)
 	    internal_res_switch_callback(screen->w, screen->h);
-
-	T4K_PresentScreen();
     }
 }
 
 /* switch between fullscreen and windowed mode */
 void T4K_SwitchScreenMode(void)
 {
+    static Uint32 last_switch_time = 0;
+    Uint32 now = SDL_GetTicks();
+    if (now - last_switch_time < 400)
+        return;
+    last_switch_time = now;
+
     if (!sdl_window)
         return;
 
