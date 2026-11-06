@@ -316,8 +316,6 @@ int T4K_Tts_init(void)
 void T4K_Tts_set_status(int status)
 {
 	text_to_speech_status = status;
-	if (!status)
-		T4K_Tts_stop();
 }
 
 /*Used to set person in TTS. in the case of espeak we will set 
